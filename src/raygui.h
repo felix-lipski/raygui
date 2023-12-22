@@ -4074,6 +4074,12 @@ void GuiLoadStyle(const char *fileName)
     }
 }
 
+int whiteHex = 0xf5f5dfff;
+int darkBrownHex = 0x412c35FF;
+int blueHex = 0x4a73a7ff;
+int greenHex = 0x77aa00ff;
+int yellowHex = 0xccbb00ff;
+int turqoiseHex = 0x00aa77ff;
 // Load style default over global style
 void GuiLoadStyleDefault(void)
 {
@@ -4085,14 +4091,16 @@ void GuiLoadStyleDefault(void)
     // WARNING: Default value are applied to all controls on set but
     // they can be overwritten later on for every custom control
     GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, 0x838383ff);
-    GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, 0xc9c9c9ff);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, 0x686868ff);
+    GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, blueHex);
+    /* GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, 0xc9c9c9ff); */
+    GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, whiteHex);
+    /* GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, 0x686868ff); */
     GuiSetStyle(DEFAULT, BORDER_COLOR_FOCUSED, 0x5bb2d9ff);
-    GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, 0xc9effeff);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, 0x6c9bbcff);
+    GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, turqoiseHex);
+    GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, whiteHex);
     GuiSetStyle(DEFAULT, BORDER_COLOR_PRESSED, 0x0492c7ff);
-    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, 0x97e8ffff);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, 0x368bafff);
+    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, greenHex);
+    GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, whiteHex);
     GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, 0xb5c1c2ff);
     GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, 0xe6e9e9ff);
     GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
@@ -4105,7 +4113,8 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, TEXT_SIZE, 10);                // DEFAULT, shared by all controls
     GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
     GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
-    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
+    /* GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property */
+    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0x0066ffff); // DEFAULT specific property
     GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 15);        // DEFAULT, 15 pixels between lines
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);   // DEFAULT, text aligned vertically to middle of text-bounds
 
@@ -4962,18 +4971,19 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
         DrawRectangle((int)rec.x + unit, (int)rec.y + (int)rec.height - borderWidth, (int)rec.width - dnit, borderWidth, GuiFade(myBorderColor, guiAlpha));
 
         // Draw shadow
-        Color darkBrown = GetColor(0x412c35FF);
+        Color white = GetColor(whiteHex);
+        // top
+        DrawRectangle((int)rec.x + unit, (int)rec.y + unit, (int)rec.width - dnit, borderWidth, GuiFade(white, guiAlpha));
+        // left
+        DrawRectangle((int)rec.x + unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(white, guiAlpha));
+
+        // Draw shadow
+        Color darkBrown = GetColor(darkBrownHex);
         // right
         DrawRectangle((int)rec.x + (int)rec.width - borderWidth - unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(darkBrown, guiAlpha));
         // bottom
         DrawRectangle((int)rec.x + unit, (int)rec.y + (int)rec.height - borderWidth - unit, (int)rec.width - dnit, borderWidth, GuiFade(darkBrown, guiAlpha));
 
-        // Draw shadow
-        Color white = GetColor(4271157);
-        // top
-        DrawRectangle((int)rec.x + unit, (int)rec.y + unit, (int)rec.width - dnit, borderWidth, GuiFade(white, guiAlpha));
-        // left
-        DrawRectangle((int)rec.x + unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(white, guiAlpha));
 
         /* Color myColor = darkBrown; */
         /* printf("Color: R=%u, G=%u, B=%u, A=%u\n", */
