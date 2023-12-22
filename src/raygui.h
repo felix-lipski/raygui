@@ -2943,8 +2943,11 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
 
     int sliderValue = (int)(((*value - minValue)/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH)));
 
-    Rectangle slider = { bounds.x, bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
-                         0, bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
+    // probably have to replace one by unit
+    Rectangle slider = { bounds.x-1, bounds.y + GuiGetStyle(SLIDER, SLIDER_PADDING),
+                         0, bounds.height - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
+    /* Rectangle slider = { bounds.x, bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING), */
+    /*                      0, bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) }; */
 
     if (sliderWidth > 0)        // Slider
     {
@@ -3026,9 +3029,9 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
     GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), GetColor(GuiGetStyle(SLIDER, (state != STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)));
 
     // Draw slider internal bar (depends on state)
-    if (state == STATE_NORMAL) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)));
-    else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)));
-    else if (state == STATE_PRESSED) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_PRESSED)));
+    if (state == STATE_NORMAL) GuiDrawRectangle(slider, 1, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)));
+    else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 1, BLANK, GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)));
+    else if (state == STATE_PRESSED) GuiDrawRectangle(slider, 1, BLANK, GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_PRESSED)));
 
     // Draw left/right text if provided
     if (textLeft != NULL)
@@ -4074,12 +4077,15 @@ void GuiLoadStyle(const char *fileName)
     }
 }
 
+int blackHex = 0x121212ff;
 int whiteHex = 0xf5f5dfff;
 int darkBrownHex = 0x412c35FF;
-int blueHex = 0x4a73a7ff;
+int brownHex = 0x73413bFF;
+int grayHex = 0x4a73a7ff;
 int greenHex = 0x77aa00ff;
 int yellowHex = 0xccbb00ff;
 int turqoiseHex = 0x00aa77ff;
+int blueHex = 0x0066ffff;
 // Load style default over global style
 void GuiLoadStyleDefault(void)
 {
@@ -4090,20 +4096,20 @@ void GuiLoadStyleDefault(void)
     // Initialize default LIGHT style property values
     // WARNING: Default value are applied to all controls on set but
     // they can be overwritten later on for every custom control
-    GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, 0x838383ff);
-    GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, blueHex);
+    GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, whiteHex);
+    GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, grayHex);
     /* GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, 0xc9c9c9ff); */
     GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, whiteHex);
     /* GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, 0x686868ff); */
-    GuiSetStyle(DEFAULT, BORDER_COLOR_FOCUSED, 0x5bb2d9ff);
-    GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, turqoiseHex);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, whiteHex);
-    GuiSetStyle(DEFAULT, BORDER_COLOR_PRESSED, 0x0492c7ff);
-    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, greenHex);
+    GuiSetStyle(DEFAULT, BORDER_COLOR_FOCUSED, blackHex);
+    GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, whiteHex);
+    GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, blackHex);
+    GuiSetStyle(DEFAULT, BORDER_COLOR_PRESSED, blackHex);
+    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, turqoiseHex);
     GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, whiteHex);
-    GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, 0xb5c1c2ff);
-    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, 0xe6e9e9ff);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
+    GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, blackHex);
+    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, whiteHex);
+    GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, grayHex);
     GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
     GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -4112,16 +4118,17 @@ void GuiLoadStyleDefault(void)
     // NOTE: By default, extended property values are initialized to 0
     GuiSetStyle(DEFAULT, TEXT_SIZE, 10);                // DEFAULT, shared by all controls
     GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
-    GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
+    /* GuiSetStyle(DEFAULT, LINE_COLOR, blackHex);       // DEFAULT specific property */
+    GuiSetStyle(DEFAULT, LINE_COLOR, whiteHex);       // DEFAULT specific property
     /* GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property */
-    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0x0066ffff); // DEFAULT specific property
+    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, grayHex); // DEFAULT specific property
     GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 15);        // DEFAULT, 15 pixels between lines
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);   // DEFAULT, text aligned vertically to middle of text-bounds
 
     // Initialize control-specific property values
     // NOTE: Those properties are in default list but require specific values by control type
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-    GuiSetStyle(BUTTON, BORDER_WIDTH, 2);
+    GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(SLIDER, TEXT_PADDING, 4);
     GuiSetStyle(PROGRESSBAR, TEXT_PADDING, 4);
     GuiSetStyle(CHECKBOX, TEXT_PADDING, 4);
@@ -4183,6 +4190,7 @@ void GuiLoadStyleDefault(void)
         Rectangle whiteChar = guiFont.recs[95];
 
         // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
+
         SetShapesTexture(guiFont.texture, RAYGUI_CLITERAL(Rectangle){ whiteChar.x + 1, whiteChar.y + 1, whiteChar.width - 2, whiteChar.height - 2 });
     }
 }
@@ -4544,6 +4552,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
 
             // Set font texture source rectangle to be used as white texture to draw shapes
             // NOTE: It makes possible to draw shapes and text (full UI) in a single draw call
+
             if ((fontWhiteRec.x > 0) &&
                 (fontWhiteRec.y > 0) &&
                 (fontWhiteRec.width > 0) &&
@@ -4949,7 +4958,7 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
         // Draw rectangle filled with color
         if (borderWidth > 0)
         {
-            DrawRectangle((int)rec.x + unit, (int)rec.y + unit, (int)rec.width - unit, (int)rec.height - unit, GuiFade(color, guiAlpha));
+            DrawRectangle((int)rec.x + unit, (int)rec.y + unit, (int)rec.width - dnit, (int)rec.height - dnit, GuiFade(color, guiAlpha));
         }
         else
         {
@@ -4959,7 +4968,8 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 
     if (borderWidth > 0)
     {
-        Color myBorderColor = GetColor(0x121212FF);
+        /* Color myBorderColor = GetColor(0x121212FF); */
+        Color myBorderColor = GetColor(blackHex);
         // Draw rectangle border lines with color
         // top
         DrawRectangle((int)rec.x + unit, (int)rec.y, (int)rec.width - dnit, borderWidth, GuiFade(myBorderColor, guiAlpha));
@@ -5336,10 +5346,18 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)));   // Draw the background
+    Color fg = GetColor(whiteHex);
+    Color bg = GetColor(blueHex);
 
-    GuiDrawRectangle(scrollbar, 0, BLANK, GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)));     // Draw the scrollbar active area background
-    GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BORDER + state*3)));         // Draw the slider bar
+    /* GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)));   // Draw the background */
+
+    /* GuiDrawRectangle(scrollbar, 0, BLANK, fg);     // Draw the scrollbar active area background */
+    GuiDrawRectangle(slider, 1, BLANK, bg);         // Draw the slider bar
+
+    /* GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)));   // Draw the background */
+
+    /* GuiDrawRectangle(scrollbar, 0, BLANK, GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)));     // Draw the scrollbar active area background */
+    /* GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BORDER + state*3)));         // Draw the slider bar */
 
     // Draw arrows (using icon if available)
     if (GuiGetStyle(SCROLLBAR, ARROWS_VISIBLE))
