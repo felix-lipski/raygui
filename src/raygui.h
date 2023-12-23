@@ -744,6 +744,16 @@ RAYGUIAPI int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *col
 RAYGUIAPI int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                 // Color Panel control that returns HSV color value, used by GuiColorPickerHSV()
 //----------------------------------------------------------------------------------------------------------
 
+int blackHex = 0x121212ff;
+int whiteHex = 0xf5f5dfff;
+int darkBrownHex = 0x412c35FF;
+int brownHex = 0x73413bFF;
+int grayHex = 0x4a73a7ff;
+int greenHex = 0x77aa00ff;
+int yellowHex = 0xccbb00ff;
+int redHex = 0xcc2200ff;
+int turqoiseHex = 0x00aa77ff;
+int blueHex = 0x0066ffff;
 
 #if !defined(RAYGUI_NO_ICONS)
 
@@ -1470,6 +1480,7 @@ static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon
 
 static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, Color tint);     // Gui draw text using default font
 static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color);   // Gui draw rectangle using default raygui style
+static void GuiDrawRectanglePro(Rectangle rec, int borderWidth, Color borderColor, Color color, char insetMode);
 
 static const char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow);   // Split controls text into multiple strings
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
@@ -1691,7 +1702,7 @@ int GuiPanel(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
     if (text != NULL) GuiStatusBar(statusBar, text);  // Draw panel header as status bar
 
-    GuiDrawRectangle(bounds, RAYGUI_PANEL_BORDER_WIDTH, GetColor(GuiGetStyle(DEFAULT, (state == STATE_DISABLED)? BORDER_COLOR_DISABLED: LINE_COLOR)),
+    GuiDrawRectangle(bounds, RAYGUI_PANEL_BORDER_WIDTH, GetColor(GuiGetStyle(DEFAULT, (state == STATE_DISABLED)? BORDER_COLOR_DISABLED: BORDER_COLOR_NORMAL)),
                      GetColor(GuiGetStyle(DEFAULT, (state == STATE_DISABLED)? BASE_COLOR_DISABLED : BACKGROUND_COLOR)));
     //--------------------------------------------------------------------
 
@@ -1976,7 +1987,13 @@ int GuiButton(Rectangle bounds, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), GetColor(GuiGetStyle(BUTTON, BASE + (state*3))));
+    int insetMode = 1;
+    if (state == STATE_PRESSED) {
+        insetMode = 2;
+    } else if (state == STATE_DISABLED) {
+        insetMode = 0;
+    }
+    GuiDrawRectanglePro(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), insetMode);
     GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))));
 
     if (state == STATE_FOCUSED) GuiTooltip(bounds);
@@ -2118,7 +2135,7 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
 }
 
 // Toggle Slider control extended, returns true when clicked
-int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
+int GuiToggleSliderPro(Rectangle bounds, const char *text, int *active, Color color1, Color color2)
 {
     int result = 0;
     GuiState state = guiState;
@@ -2169,9 +2186,9 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
         GetColor(GuiGetStyle(TOGGLE, BASE_COLOR_NORMAL)));
 
     // Draw internal slider
-    if (state == STATE_NORMAL) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)));
-    else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_FOCUSED)));
-    else if (state == STATE_PRESSED) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)));
+    if (state == STATE_NORMAL) GuiDrawRectangle(slider, 1, BLANK, color1);
+    else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 1, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_FOCUSED)));
+    else if (state == STATE_PRESSED) GuiDrawRectangle(slider, 1, BLANK, color2);
 
     // Draw text in slider
     if (text != NULL)
@@ -2187,6 +2204,10 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
     //--------------------------------------------------------------------
 
     return result;
+}
+
+int GuiToggleSlider(Rectangle bounds, const char *text, int *active) {
+    GuiToggleSliderPro(bounds, text, active, GetColor(greenHex), GetColor(redHex));
 }
 
 // Check Box control, returns 1 when state changed
@@ -4077,15 +4098,6 @@ void GuiLoadStyle(const char *fileName)
     }
 }
 
-int blackHex = 0x121212ff;
-int whiteHex = 0xf5f5dfff;
-int darkBrownHex = 0x412c35FF;
-int brownHex = 0x73413bFF;
-int grayHex = 0x4a73a7ff;
-int greenHex = 0x77aa00ff;
-int yellowHex = 0xccbb00ff;
-int turqoiseHex = 0x00aa77ff;
-int blueHex = 0x0066ffff;
 // Load style default over global style
 void GuiLoadStyleDefault(void)
 {
@@ -4096,7 +4108,7 @@ void GuiLoadStyleDefault(void)
     // Initialize default LIGHT style property values
     // WARNING: Default value are applied to all controls on set but
     // they can be overwritten later on for every custom control
-    GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, whiteHex);
+    GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, blackHex);
     GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, grayHex);
     /* GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, 0xc9c9c9ff); */
     GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, whiteHex);
@@ -4105,11 +4117,11 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, whiteHex);
     GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, blackHex);
     GuiSetStyle(DEFAULT, BORDER_COLOR_PRESSED, blackHex);
-    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, turqoiseHex);
+    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, greenHex);
     GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, whiteHex);
-    GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, blackHex);
-    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, whiteHex);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, grayHex);
+    GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, brownHex);
+    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, grayHex);
+    GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, brownHex);
     GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
     GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -4948,7 +4960,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
 }
 
 // Gui draw rectangle using default raygui plain style with borders
-static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color)
+static void GuiDrawRectanglePro(Rectangle rec, int borderWidth, Color borderColor, Color color, char insetMode)
 {
     int unit = borderWidth;
     int dnit = borderWidth * 2;
@@ -4969,7 +4981,8 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
     if (borderWidth > 0)
     {
         /* Color myBorderColor = GetColor(0x121212FF); */
-        Color myBorderColor = GetColor(blackHex);
+        /* Color myBorderColor = GetColor(blackHex); */
+        Color myBorderColor = borderColor;
         // Draw rectangle border lines with color
         // top
         DrawRectangle((int)rec.x + unit, (int)rec.y, (int)rec.width - dnit, borderWidth, GuiFade(myBorderColor, guiAlpha));
@@ -4980,19 +4993,36 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
         // bottom
         DrawRectangle((int)rec.x + unit, (int)rec.y + (int)rec.height - borderWidth, (int)rec.width - dnit, borderWidth, GuiFade(myBorderColor, guiAlpha));
 
-        // Draw shadow
-        Color white = GetColor(whiteHex);
-        // top
-        DrawRectangle((int)rec.x + unit, (int)rec.y + unit, (int)rec.width - dnit, borderWidth, GuiFade(white, guiAlpha));
-        // left
-        DrawRectangle((int)rec.x + unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(white, guiAlpha));
-
-        // Draw shadow
-        Color darkBrown = GetColor(darkBrownHex);
-        // right
-        DrawRectangle((int)rec.x + (int)rec.width - borderWidth - unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(darkBrown, guiAlpha));
-        // bottom
-        DrawRectangle((int)rec.x + unit, (int)rec.y + (int)rec.height - borderWidth - unit, (int)rec.width - dnit, borderWidth, GuiFade(darkBrown, guiAlpha));
+        switch (insetMode) {
+            case 1: {
+                // Draw shadow
+                Color white = GetColor(whiteHex);
+                Color darkBrown = GetColor(darkBrownHex);
+                // top
+                DrawRectangle((int)rec.x + unit, (int)rec.y + unit, (int)rec.width - dnit, borderWidth, GuiFade(white, guiAlpha));
+                // left
+                DrawRectangle((int)rec.x + unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(white, guiAlpha));
+                // right
+                DrawRectangle((int)rec.x + (int)rec.width - borderWidth - unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(darkBrown, guiAlpha));
+                // bottom
+                DrawRectangle((int)rec.x + unit, (int)rec.y + (int)rec.height - borderWidth - unit, (int)rec.width - dnit, borderWidth, GuiFade(darkBrown, guiAlpha));
+            } break;
+            case 2: {
+                // Draw shadow
+                Color white = GetColor(whiteHex);
+                Color darkBrown = GetColor(darkBrownHex);
+                // right
+                DrawRectangle((int)rec.x + (int)rec.width - borderWidth, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(white, guiAlpha));
+                /* DrawRectangle((int)rec.x + (int)rec.width - borderWidth, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(white, guiAlpha)); */
+                // bottom
+                DrawRectangle((int)rec.x + unit, (int)rec.y + (int)rec.height - borderWidth, (int)rec.width - dnit, borderWidth, GuiFade(white, guiAlpha));
+                /* DrawRectangle((int)rec.x + unit, (int)rec.y + (int)rec.height - borderWidth - unit, (int)rec.width - dnit, borderWidth, GuiFade(white, guiAlpha)); */
+                /* // top */
+                /* DrawRectangle((int)rec.x + unit, (int)rec.y + unit, (int)rec.width - dnit, borderWidth, GuiFade(darkBrown, guiAlpha)); */
+                /* // left */
+                /* DrawRectangle((int)rec.x + unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(darkBrown, guiAlpha)); */
+            } break;
+        }
 
 
         /* Color myColor = darkBrown; */
@@ -5003,6 +5033,10 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 #if defined(RAYGUI_DEBUG_RECS_BOUNDS)
     DrawRectangle((int)rec.x, (int)rec.y, (int)rec.width, (int)rec.height, Fade(RED, 0.4f));
 #endif
+}
+
+static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color) {
+    return GuiDrawRectanglePro(rec, borderWidth, borderColor, color, 1);
 }
 
 // Draw tooltip using control bounds
@@ -5346,13 +5380,14 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
 
     // Draw control
     //--------------------------------------------------------------------
-    Color fg = GetColor(whiteHex);
-    Color bg = GetColor(blueHex);
+    Color bg = GetColor(brownHex);
+    Color fg = GetColor(grayHex);
 
     /* GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)));   // Draw the background */
 
-    /* GuiDrawRectangle(scrollbar, 0, BLANK, fg);     // Draw the scrollbar active area background */
-    GuiDrawRectangle(slider, 1, BLANK, bg);         // Draw the slider bar
+    // TODO dithered background here
+    /* GuiDrawRectangle(scrollbar, 0, BLANK, bg);     // Draw the scrollbar active area background */
+    GuiDrawRectangle(slider, 1, BLANK, fg);         // Draw the slider bar
 
     /* GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)));   // Draw the background */
 
