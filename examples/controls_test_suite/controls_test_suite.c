@@ -134,6 +134,9 @@ int main()
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
+    GuiLoadStyleDark();
+
+    Texture texPattern = LoadTexture("resources/pattern.png");
 
     // Main game loop
     while (!exitWindow)    // Detect window close button or ESC key
@@ -254,7 +257,7 @@ int main()
             //GuiDisable();
             GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", sliderValue), &sliderValue, -50, 100);
             GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), &sliderBarValue, 0, 100);
-            
+
             GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, TextFormat("%i%%", (int)(progressValue*100)), &progressValue, 0.0f, 1.0f);
             GuiEnable();
 
@@ -280,7 +283,13 @@ int main()
 
             if (showMessageBox)
             {
-                DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
+                /* DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f)); */
+                Color white = GetColor(GuiGetStyle(DEFAULT, LINE_COLOR));
+                for (int x = 0; x < screenWidth; x++) {
+                    for (int y = 0; y < screenHeight; y++) {
+                        DrawTexture(texPattern, x*2, y*2, white);
+                    }
+                }
                 int result = GuiMessageBox((Rectangle){ (float)GetScreenWidth()/2 - 125, (float)GetScreenHeight()/2 - 50, 250, 100 }, GuiIconText(ICON_EXIT, "Close Window"), "Do you really want to exit?", "Yes;No");
 
                 if ((result == 0) || (result == 2)) showMessageBox = false;
